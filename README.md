@@ -14,7 +14,7 @@ This project is a **Spring Boot + Jsoup + MongoDB** application that collects **
 
 ## 🛠️ Technologies  
 - ☕ **Java 21**  
-- 🚀 **Spring Boot 3.3.x**  
+- 🚀 **Spring Boot 3.55  
 - 📰 **Jsoup**  
 - 🗄️ **MongoDB**  
 - 📑 **Swagger (OpenAPI)**  
@@ -23,11 +23,8 @@ This project is a **Spring Boot + Jsoup + MongoDB** application that collects **
 
 ### Prerequisites  
 - Java 21  
-- Maven 3+  
+- Maven 3.55
 - MongoDB (local or Docker)  
 
-### Run Locally  
-```bash
-# Clone the repository
-git clone https://github.com/your-us
+
 
