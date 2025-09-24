@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
@@ -24,16 +23,28 @@ public class AdminController {
     
     @GetMapping("/users")
     public String listUsers(Model model, HttpSession session) {
+        System.out.println("🔍 AdminController: /admin/users çağrıldı");
+        
         // Session kontrolü
         if (session.getAttribute("user") == null) {
+            System.out.println("⚠️ Session bulunamadı, login'e yönlendiriliyor");
             return "redirect:/login";
         }
         
-        List<User> users = userService.getAllUsers();
-        model.addAttribute("users", users);
-        model.addAttribute("username", session.getAttribute("user"));
-        
-        return "admin/users";
+        try {
+            List<User> users = userService.getAllUsers();
+            System.out.println("✅ " + users.size() + " kullanıcı bulundu");
+            
+            model.addAttribute("users", users);
+            model.addAttribute("username", session.getAttribute("user"));
+            
+            return "admin/users";
+        } catch (Exception e) {
+            System.err.println("❌ AdminController hatası: " + e.getMessage());
+            e.printStackTrace();
+            model.addAttribute("error", "Kullanıcılar yüklenirken hata: " + e.getMessage());
+            return "error";
+        }
     }
     
     @PostMapping("/users/create")
@@ -43,7 +54,8 @@ public class AdminController {
                             @RequestParam String email,
                             HttpSession session) {
         
-        // Session kontrolü
+        System.out.println("🔍 Yeni kullanıcı oluşturma: " + username);
+        
         if (session.getAttribute("user") == null) {
             return "unauthorized";
         }
@@ -54,9 +66,11 @@ public class AdminController {
             }
             
             authService.createUser(username, password, email);
+            System.out.println("✅ Kullanıcı oluşturuldu: " + username);
             return "success";
             
         } catch (Exception e) {
+            System.err.println("❌ Kullanıcı oluşturma hatası: " + e.getMessage());
             return "error: " + e.getMessage();
         }
     }
@@ -90,4 +104,3 @@ public class AdminController {
         }
     }
 }
-
