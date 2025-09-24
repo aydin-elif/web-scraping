@@ -1,13 +1,21 @@
+
 package com.project.webscraping.controller;
 
+import com.project.webscraping.service.ScrapingService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import jakarta.servlet.http.HttpSession;
+
 
 @Controller
 public class DashboardController {
+
+	@Autowired  // ← Buraya yazın 
+	private ScrapingService scrapingService;
+
     
     @GetMapping("/dashboard")
     public String dashboard(Model model, HttpSession session) {
@@ -19,10 +27,18 @@ public class DashboardController {
         String username = (String) session.getAttribute("user");
         model.addAttribute("username", username);
         
-        // Şimdilik sabit değerler - sonra ScrapingService'ten alacağız
+     // Eski satırlar:
+/*
         model.addAttribute("constructionCount", 0);
         model.addAttribute("healthCount", 0);
         model.addAttribute("technologyCount", 0);
+*/
+        // Yeni satırlar:
+        model.addAttribute("constructionCount", scrapingService.getDataCountByCategory("construction"));
+        model.addAttribute("healthCount", scrapingService.getDataCountByCategory("health"));
+        model.addAttribute("technologyCount", scrapingService.getDataCountByCategory("technology"));
+
+
         
         return "dashboard";
     }
@@ -45,7 +61,12 @@ public class DashboardController {
         model.addAttribute("username", username);
         
         // Şimdilik boş liste - sonra ScrapingService'ten alacağız
-        model.addAttribute("data", java.util.Collections.emptyList());
+        //model.addAttribute("data", java.util.Collections.emptyList());
+        
+        // ScrapingService'den gerçek haberleri çekiyor
+        model.addAttribute("data", scrapingService.getDataByCategory(categoryName));
+
+        
         model.addAttribute("categoryName", categoryName);
         model.addAttribute("categoryTitle", getCategoryTitle(categoryName));
         

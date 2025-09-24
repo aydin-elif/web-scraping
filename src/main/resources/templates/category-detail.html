@@ -21,14 +21,38 @@
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
+        .news-card {
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border: none;
+            margin-bottom: 20px;
+        }
+        .news-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
         .construction-theme .page-header {
             background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+        }
+        .construction-theme .news-card {
+            border-left: 4px solid #ff9800;
         }
         .health-theme .page-header {
             background: linear-gradient(135deg, #e91e63 0%, #c2185b 100%);
         }
+        .health-theme .news-card {
+            border-left: 4px solid #e91e63;
+        }
         .technology-theme .page-header {
             background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+        }
+        .technology-theme .news-card {
+            border-left: 4px solid #2196f3;
+        }
+        .news-meta {
+            font-size: 0.9rem;
+            color: #6c757d;
         }
         .no-news {
             background: rgba(255,255,255,0.9);
@@ -75,21 +99,63 @@
                             <a th:href="@{/dashboard}" class="btn btn-outline-light">
                                 <i class="fas fa-arrow-left me-2"></i>Ana Sayfa'ya Dön
                             </a>
+                            <button class="btn btn-outline-light" onclick="refreshData()">
+                                <i class="fas fa-sync-alt me-2"></i>Verileri Yenile
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- No News Message -->
+        <!-- News Cards -->
         <div class="row">
             <div class="col-12">
-                <div class="no-news">
+                <!-- Haberler Varsa -->
+                <div th:if="${data != null and not data.empty}">
+                    <div th:each="news : ${data}" class="news-card">
+                        <div class="card">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h5 class="card-title fw-bold mb-0" th:text="${news.title}">Haber Başlığı</h5>
+                                    <div class="news-meta">
+                                        <i class="fas fa-clock me-1"></i>
+                                        <span th:text="${#dates.format(news.scrapedAt, 'dd.MM.yyyy HH:mm')}">Tarih</span>
+                                    </div>
+                                </div>
+                                
+                                <p class="card-text text-muted mb-3" th:text="${news.content}">
+                                    Haber içeriği...
+                                </p>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="news-meta">
+                                        <i class="fas fa-link me-1"></i>
+                                        <span th:text="${news.sourceUrl != null ? 'Kaynak Linki' : 'Kaynak Belirtilmemiş'}">Kaynak</span>
+                                    </div>
+                                    <div th:switch="${categoryName}">
+                                        <span th:case="'construction'" class="badge bg-warning">
+                                            <i class="fas fa-hard-hat me-1"></i>İnşaat
+                                        </span>
+                                        <span th:case="'health'" class="badge bg-danger">
+                                            <i class="fas fa-heartbeat me-1"></i>Sağlık
+                                        </span>
+                                        <span th:case="'technology'" class="badge bg-primary">
+                                            <i class="fas fa-microchip me-1"></i>Teknoloji
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Haber Yoksa -->
+                <div th:if="${data == null or data.empty}" class="no-news">
                     <i class="fas fa-newspaper fa-4x text-muted mb-4"></i>
-                    <h4 class="text-muted mb-3">Henüz Haber Bulunmuyor</h4>
+                    <h4 class="text-muted mb-3">Bu Kategoride Henüz Haber Yok</h4>
                     <p class="text-muted mb-4">
-                        Bu kategori için henüz haber verisi mevcut değil. 
-                        Web scraping servisleri yakında eklenecek.
+                        Veriler otomatik olarak güncellenecek. Manuel yenilemek için yukarıdaki butonu kullanabilirsiniz.
                     </p>
                     <a th:href="@{/dashboard}" class="btn btn-primary">
                         <i class="fas fa-arrow-left me-2"></i>Ana Sayfa'ya Dön
@@ -97,9 +163,47 @@
                 </div>
             </div>
         </div>
+
+        <!-- Debug Bilgisi (Geliştirme için) -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card bg-light">
+                    <div class="card-body text-center py-3">
+                        <small class="text-muted">
+                            <strong>Debug:</strong> 
+                            Kategori: <span th:text="${categoryName}">unknown</span> | 
+                            Veri sayısı: <span th:text="${data != null ? data.size() : 0}">0</span> | 
+                            Son güncelleme: <span th:text="${#dates.format(#dates.createNow(), 'dd.MM.yyyy HH:mm')}">now</span>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function refreshData() {
+            const categoryName = '[[${categoryName}]]';
+            
+            fetch(`/scrape/${categoryName}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.text())
+            .then(data => {
+                if (data === 'success') {
+                    window.location.reload();
+                } else {
+                    alert('Yenileme sırasında hata: ' + data);
+                }
+            })
+            .catch(error => {
+                alert('Bir hata oluştu: ' + error.message);
+            });
+        }
+    </script>
 </body>
 </html>
-
