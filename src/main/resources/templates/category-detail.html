@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${categoryTitle} + ' - AI News Scraper'">Category - AI News Scraper</title>
+    <link href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .construction-theme .page-header {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+        }
+        .health-theme .page-header {
+            background: linear-gradient(135deg, #e91e63 0%, #c2185b 100%);
+        }
+        .technology-theme .page-header {
+            background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+        }
+        .no-news {
+            background: rgba(255,255,255,0.9);
+            border-radius: 15px;
+            padding: 3rem;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body th:class="${categoryName + '-theme'}">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand fw-bold" th:href="@{/dashboard}">
+                <i class="fas fa-robot me-2"></i>AI News Scraper
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    <i class="fas fa-user me-2"></i><span th:text="${username}">User</span>
+                </span>
+                <a class="btn btn-outline-light btn-sm" th:href="@{/logout}">
+                    <i class="fas fa-sign-out-alt me-1"></i>Çıkış
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-4">
+        <!-- Page Header -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="page-header">
+                    <div class="card-body text-center py-5">
+                        <div th:switch="${categoryName}">
+                            <i th:case="'construction'" class="fas fa-hard-hat fa-4x mb-3 opacity-75"></i>
+                            <i th:case="'health'" class="fas fa-heartbeat fa-4x mb-3 opacity-75"></i>
+                            <i th:case="'technology'" class="fas fa-microchip fa-4x mb-3 opacity-75"></i>
+                        </div>
+                        <h2 class="fw-bold mb-3" th:text="${categoryTitle}">Kategori</h2>
+                        <p class="lead mb-4">Bu kategorideki en güncel yapay zeka haberleri</p>
+                        <div class="d-flex justify-content-center gap-3">
+                            <a th:href="@{/dashboard}" class="btn btn-outline-light">
+                                <i class="fas fa-arrow-left me-2"></i>Ana Sayfa'ya Dön
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- No News Message -->
+        <div class="row">
+            <div class="col-12">
+                <div class="no-news">
+                    <i class="fas fa-newspaper fa-4x text-muted mb-4"></i>
+                    <h4 class="text-muted mb-3">Henüz Haber Bulunmuyor</h4>
+                    <p class="text-muted mb-4">
+                        Bu kategori için henüz haber verisi mevcut değil. 
+                        Web scraping servisleri yakında eklenecek.
+                    </p>
+                    <a th:href="@{/dashboard}" class="btn btn-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Ana Sayfa'ya Dön
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
