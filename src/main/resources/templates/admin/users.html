@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kullanıcı Yönetimi - AI News Scraper</title>
+    <link href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .management-card {
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand fw-bold" th:href="@{/dashboard}">
+                <i class="fas fa-robot me-2"></i>AI News Scraper
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    <i class="fas fa-user me-2"></i><span th:text="${username}">User</span>
+                </span>
+                <a class="btn btn-outline-light btn-sm" th:href="@{/logout}">
+                    <i class="fas fa-sign-out-alt me-1"></i>Çıkış
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-4">
+        <!-- Back Button -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <a th:href="@{/dashboard}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Dashboard'a Dön
+                </a>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Kullanıcı Listesi -->
+            <div class="col-md-8">
+                <div class="card management-card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-users me-2"></i>Kayıtlı Kullanıcılar</h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${users != null and not users.empty}">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Kullanıcı Adı</th>
+                                            <th>Email</th>
+                                            <th>Oluşturulma Tarihi</th>
+                                            <th>Durum</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="user : ${users}">
+                                            <td>
+                                                <i class="fas fa-user me-2"></i>
+                                                <span th:text="${user.username}">Username</span>
+                                            </td>
+                                            <td th:text="${user.email}">Email</td>
+                                            <td th:text="${#dates.format(user.createdAt, 'dd.MM.yyyy HH:mm')}">Date</td>
+                                            <td>
+                                                <span th:if="${user.enabled}" class="badge bg-success">Aktif</span>
+                                                <span th:unless="${user.enabled}" class="badge bg-danger">Pasif</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div th:if="${users == null or users.empty}" class="text-center py-4">
+                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Henüz kullanıcı bulunmuyor</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Yeni Kullanıcı Ekleme -->
+            <div class="col-md-4">
+                <div class="card management-card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-user-plus me-2"></i>Yeni Kullanıcı Ekle</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="createUserForm">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Kullanıcı Adı</label>
+                                <input type="text" class="form-control" id="username" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Şifre</label>
+                                <input type="password" class="form-control" id="password" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-plus me-2"></i>Kullanıcı Ekle
+                            </button>
+                        </form>
+                        
+                        <!-- Alert Area -->
+                        <div id="alertArea" class="mt-3"></div>
+                    </div>
+                </div>
+
+                <!-- Veritabanı Bilgileri -->
+                <div class="card management-card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-database me-2"></i>Veritabanı</h5>
+                    </div>
+                    <div class="card-body">
+                        <button class="btn btn-info w-100" onclick="checkDatabase()">
+                            <i class="fas fa-search me-2"></i>Veritabanı Durumunu Kontrol Et
+                        </button>
+                        <div id="dbInfo" class="mt-3" style="display: none;">
+                            <pre id="dbInfoContent" class="bg-light p-3 rounded"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Yeni kullanıcı ekleme
+        document.getElementById('createUserForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const email = document.getElementById('email').value;
+            
+            const formData = new FormData();
+            formData.append('username', username);
+            formData.append('password', password);
+            formData.append('email', email);
+            
+            fetch('/admin/users/create', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                const alertArea = document.getElementById('alertArea');
+                
+                if (data === 'success') {
+                    alertArea.innerHTML = '<div class="alert alert-success">Kullanıcı başarıyla oluşturuldu!</div>';
+                    document.getElementById('createUserForm').reset();
+                    // Sayfayı yenile
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    alertArea.innerHTML = '<div class="alert alert-danger">' + data + '</div>';
+                }
+            })
+            .catch(error => {
+                document.getElementById('alertArea').innerHTML = '<div class="alert alert-danger">Hata: ' + error.message + '</div>';
+            });
+        });
+
+        // Veritabanı durumu kontrolü
+        function checkDatabase() {
+            fetch('/admin/database-info')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('dbInfoContent').textContent = data;
+                document.getElementById('dbInfo').style.display = 'block';
+            })
+            .catch(error => {
+                document.getElementById('dbInfoContent').textContent = 'Hata: ' + error.message;
+                document.getElementById('dbInfo').style.display = 'block';
+            });
+        }
+    </script>
+</body>
+</html>
